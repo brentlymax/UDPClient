@@ -1,0 +1,6 @@
+# CodeBlocks files
+bin
+obj
+UDPClient.cbp
+UDPClient.depend
+UDPClient.layout
