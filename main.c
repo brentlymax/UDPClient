@@ -61,6 +61,7 @@ int main()
 	clientAddr.sin_family = AF_INET;
 	clientAddr.sin_port = htons(clientPort);
 	clientAddr.sin_addr.s_addr = htons(0);
+
 	if ((bind(clientSocket, (SOCKADDR*)&clientAddr, sizeof(clientAddr))) == SOCKET_ERROR)
 	{
 		printf("bind() failed. Error: %1d.\n", WSAGetLastError());
@@ -107,9 +108,10 @@ int main()
 				timeout.tv_usec = 0;
 				int selectTimeout = select(clientSocket + 1, &socks, NULL, NULL, &timeout);
 
-				// If select() error throw WSA error, else if timeout resend packet, else receive ACK or reject.
+				// If select() error throw WSA error.
 				if (selectTimeout == SOCKET_ERROR) {
 					printf("Timeout select() call failed. Error: %1d.\n", WSAGetLastError());
+				// Else if timeout occurs, resend packet.
 				} else if (selectTimeout == 0) {
 					printf("Timeout waiting for ACK. Resending packet.\n");
 					if (sendto(clientSocket, &sendPacket[i], sizeof(dataPacket), 0, (SOCKADDR*)&serverAddr, serverAddrLen) < 0) {
@@ -119,6 +121,7 @@ int main()
 						return -1;
 					} else
 						printf("Data sent to server.\n\n");
+				// Else receive ACK or reject from server.
 				} else {
 					char recvBuffer[MAX_BUFFER_LEN];
 					if (recvfrom(clientSocket, recvBuffer, MAX_BUFFER_LEN - 1, 0, (SOCKADDR*)&serverAddr, &serverAddrLen) < 0) {

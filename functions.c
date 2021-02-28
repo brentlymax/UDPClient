@@ -17,6 +17,7 @@ dataPacket* createDataSegments(char inputBuffer[]) {
 	int inputEndFlag;
 	int numSegs = ceil(((float) strlen(inputBuffer))/((float)MAX_PAYLOAD_LEN));
 	dataPacket *dPacketArray = malloc(sizeof(dataPacket) * numSegs);
+
 	for (int i = 0; i < numSegs; i++) {
 		inputEndFlag = 0;
 		dPacketArray[i].startID = PACKET_START_ID;
@@ -24,6 +25,7 @@ dataPacket* createDataSegments(char inputBuffer[]) {
 		dPacketArray[i].packetType = PACKET_TYPE_DATA;
 		dPacketArray[i].segNum = (i + 1);
 		dPacketArray[i].payloadLen = MAX_PAYLOAD_LEN;
+
 		// Insert payload into packet byte by byte. If the last packet is shorter, the empty characters are set to null.
 		for (int j = 0; j < MAX_PAYLOAD_LEN; j++) {
 			dPacketArray[i].payload[j] = inputBuffer[(255 * i) + j];
@@ -142,10 +144,12 @@ void readInputFile(char inputBuffer[]) {
 	char c;
 	int i = 0;
 	FILE *file = fopen("Message.txt", "r");
+
 	if (file == NULL) {
 		printf("Could not open file.\n");
 		return -1;
 	}
+
 	while (c != EOF) {
 		c = fgetc(file);
 		inputBuffer[i] = c;
@@ -155,6 +159,7 @@ void readInputFile(char inputBuffer[]) {
 			break;
 		}
 	}
+
 	inputBuffer[i] = '\0';
 	fclose(file);
 }
@@ -163,15 +168,18 @@ void readInputFile(char inputBuffer[]) {
  * Deserialize ACK or reject packet and give an appropriate response to client.
  */
 int deserialize(ackPacket *ackPacket, rejectPacket *rejPacket, char buffer[]) {
+	// If ACK received.
 	if(((u_char)buffer[3] == 0xf2 && (u_char)buffer[4] == 0xff) ||
 		((u_char)buffer[3] == 0xff && (u_char)buffer[4] == 0xf2)) {
 		ackPacket->packetType = PACKET_TYPE_ACK;
 		printf("ACK received from server.\n");
 		return 1;
+	// Else if reject received.
 	} else if(((u_char)buffer[3] == 0xf3 && (u_char)buffer[4] == 0xff) ||
 		((u_char)buffer[3] == 0xff && (u_char)buffer[4] == 0xf3)) {
 		rejPacket->packetType = PACKET_TYPE_REJECT;
 		rejPacket->subCode = buffer[5] + buffer[6] + 1;
+
 		if (rejPacket->subCode == REJECT_SUB1) {
 			printf("Packet out of sequence. Error: %1x.\n", REJECT_SUB1);
 			return -1;
@@ -185,6 +193,9 @@ int deserialize(ackPacket *ackPacket, rejectPacket *rejPacket, char buffer[]) {
 			printf("Duplicate packet. Error: %1x.\n", REJECT_SUB4);
 			return -1;
 		}
-	} else
-		return 1;
+	// Else deserialize failed.
+	} else {
+		printf("Error: deserialize failed.\n");
+		return -1;
+	}
 }
