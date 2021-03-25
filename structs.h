@@ -27,8 +27,7 @@
 #define REJECT_SUB4 0xFFF7              // Reject sub code: Duplicate packet
 
 // Data packets sent by the client.
-typedef struct dataPacket
-{
+typedef struct dataPacket {
 	uint16_t startID;
 	uint8_t clientID;
 	uint16_t packetType;
@@ -36,34 +35,32 @@ typedef struct dataPacket
 	uint8_t payloadLen;
 	char payload[MAX_PAYLOAD_LEN];
 	uint16_t endID;
-} dataPacket;
+};
 
 // Acknowledgment packets sent by server when it receives a correct packet.
-typedef struct ackPacket
-{
+typedef struct ackPacket {
 	uint16_t startID;
 	uint8_t clientID;
 	uint16_t packetType;
 	uint8_t recvSegNum;
 	uint16_t endID;
-} ackPacket;
+};
 
 // Reject packets sent by server when it receives an invalid packet.
-typedef struct rejectPacket
-{
+typedef struct rejectPacket {
 	uint16_t startID;
 	uint8_t clientID;
 	uint16_t packetType;
 	uint16_t subCode;
 	uint8_t recvSegNum;
 	uint16_t endID;
-} rejectPacket;
+};
 
 // Buffer for packets that contain pointers to any of the other 3 packet types.
 typedef struct dataBuffer {
 	void *data;
 	size_t size;
 	int next;
-} dataBuffer;
+};
 
 #endif

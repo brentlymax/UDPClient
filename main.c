@@ -41,16 +41,20 @@ int main()
 	if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
 		printf("WSAStartup failed. Error: %1d.\n", WSAGetLastError());
 		return -1;
-	} else
+	}
+	else {
 		printf("WSAStartup succeeded. Status: %s.\n", wsaData.szSystemStatus);
+	}
 
 	// Open socket.
 	if ((clientSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == SOCKET_ERROR) {
 		printf("socket() failed. Error: %1d.\n", WSAGetLastError());
 		WSACleanup();
 		return -1;
-	} else
+	}
+	else {
 		printf("socket() succeeded.\n");
+	}
 
 	// Set up address structures, then bind the client to the socket.
 	memset((char*)&serverAddr, 0, sizeof(serverAddr));
@@ -68,8 +72,10 @@ int main()
 		closesocket(clientSocket);
 		WSACleanup();
 		return -1;
-	} else
+	}
+	else {
 		printf("bind() succeeded.\n");
+	}
 
 	// Loop and send/receive data to/from the server.
 	printf("Ready to transmit data.\n");
@@ -97,8 +103,10 @@ int main()
 				closesocket(clientSocket);
 				WSACleanup();
 				return -1;
-			} else
+			}
+			else {
 				printf("Data sent to server.\n\n");
+			}
 
 			// Wait for ACK, resend data up to 3 times if timeout happens.
 			while (resendAttemptNum < MAX_RESEND_ATTEMPTS) {
@@ -111,25 +119,30 @@ int main()
 				// If select() error throw WSA error.
 				if (selectTimeout == SOCKET_ERROR) {
 					printf("Timeout select() call failed. Error: %1d.\n", WSAGetLastError());
+				}
 				// Else if timeout occurs, resend packet.
-				} else if (selectTimeout == 0) {
+				else if (selectTimeout == 0) {
 					printf("Timeout waiting for ACK. Resending packet.\n");
 					if (sendto(clientSocket, &sendPacket[i], sizeof(dataPacket), 0, (SOCKADDR*)&serverAddr, serverAddrLen) < 0) {
 						printf("Failed to send data to server. Error: %1d.\n\n", WSAGetLastError());
 						closesocket(clientSocket);
 						WSACleanup();
 						return -1;
-					} else
+					}
+					else {
 						printf("Data sent to server.\n\n");
+					}
+				}
 				// Else receive ACK or reject from server.
-				} else {
+				else {
 					char recvBuffer[MAX_BUFFER_LEN];
 					if (recvfrom(clientSocket, recvBuffer, MAX_BUFFER_LEN - 1, 0, (SOCKADDR*)&serverAddr, &serverAddrLen) < 0) {
 						printf("Failed to receive Response from server. Error: %1d.\n", WSAGetLastError());
 						closesocket(clientSocket);
 						WSACleanup();
 						return -1;
-					} else {
+					}
+					else {
 						recvACKPacket = malloc(sizeof(ackPacket));
 						recvRejPacket = malloc(sizeof(rejectPacket));
 						deserialize(recvACKPacket, recvRejPacket, recvBuffer);
@@ -147,5 +160,5 @@ int main()
 		}
 		break;
 	}
-return 0;
+	return 0;
 }
